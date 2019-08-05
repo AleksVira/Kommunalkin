@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="ru.virarnd.kommunalkin.models.EstateObjectStatus"/>
+        <import type="android.view.View"/>
+        <variable name="detailInfoViewModel"
+                  type="ru.virarnd.kommunalkin.ui.detailinfo.DetailInfoViewModel"/>
+    </data>
+    <LinearLayout
+            android:id="@+id/detail_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/warning_label"
+                android:layout_weight="0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:textAlignment="center" android:textStyle="bold"
+                android:textColor="@color/colorAccent" android:textSize="18sp"
+                android:text="@string/data_already_sent"
+                android:visibility="@{detailInfoViewModel.status == EstateObjectStatus.COMPLETED ? View.VISIBLE : View.GONE}"
+        />
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/detail_recycler_view"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                tools:listitem="@layout/item_detail_info"/>
+        <Button
+                android:id="@+id/send_button"
+                android:layout_weight="0"
+                android:text="@string/send_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{detailInfoViewModel.status == EstateObjectStatus.COMPLETED ? View.GONE : View.VISIBLE}"
+        />
+    </LinearLayout>
+</layout>

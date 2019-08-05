@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Kommunalkin</string>
+    <string name="reading_now">Показания сейчас</string>
+    <string name="consumption">Расход:</string>
+    <string name="reading_now_label">Сейчас:</string>
+    <string name="reading_past">Было:</string>
+    <string name="data_already_sent">Эти данные уже отправлены</string>
+    <string name="send_data">Отправить данные</string>
+</resources>

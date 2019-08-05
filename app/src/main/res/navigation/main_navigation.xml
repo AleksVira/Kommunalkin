@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main_navigation"
+        app:startDestination="@id/login_fragment">
+    <fragment
+            android:id="@+id/login_fragment"
+            android:name="ru.virarnd.kommunalkin.ui.login.LoginFragment"
+            tools:layout="@layout/fragment_login"
+            android:label="LoginFragment">
+        <action
+                android:id="@+id/action_login_fragment_to_registration_fragment"
+                app:destination="@id/registration_fragment"/>
+        <action android:id="@+id/action_login_fragment_to_main_info_fragment" app:destination="@id/main_info_fragment"/>
+    </fragment>
+    <fragment
+            android:id="@+id/registration_fragment"
+            android:name="ru.virarnd.kommunalkin.ui.registration.RegistrationFragment"
+            tools:layout="@layout/fragment_registration"
+            android:label="RegistrationFragment">
+        <action android:id="@+id/action_registration_fragment_to_main_info_fragment"
+                app:destination="@id/main_info_fragment" app:popUpTo="@+id/login_fragment"
+        />
+    </fragment>
+    <fragment
+            android:id="@+id/main_info_fragment"
+            android:name="ru.virarnd.kommunalkin.ui.maininfo.MainInfoFragment"
+            tools:layout="@layout/fragment_main_info"
+            android:label="MainInfoFragment">
+        <argument android:name="userId" app:argType="long"/>
+        <action android:id="@+id/action_main_info_fragment_to_detailInfoFragment"
+                app:destination="@id/detail_info_fragment"
+        />
+    </fragment>
+    <fragment android:id="@+id/detail_info_fragment"
+              android:name="ru.virarnd.kommunalkin.ui.detailinfo.DetailInfoFragment"
+              tools:layout="@layout/fragment_detail_info"
+              android:label="DetailInfoFragment">
+        <argument android:name="prevFootprintId" app:argType="long"/>
+        <argument android:name="nowFootprintId" app:argType="long"/>
+        <argument
+                android:name="status"
+                android:defaultValue="EMPTY"
+                app:argType="ru.virarnd.kommunalkin.models.EstateObjectStatus"
+        />
+    </fragment>
+</navigation>
