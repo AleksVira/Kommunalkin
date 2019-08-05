@@ -98,13 +98,14 @@
                     app:layout_constraintBottom_toBottomOf="parent"/>
             <TextView
                     android:id="@+id/tv_consumption"
-                    android:text="@{Double.toString(counter.counterReading - safeUnbox(previousReading))}"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
                     app:layout_constraintBottom_toBottomOf="@+id/textView5"
                     tools:text="10.15" app:layout_constraintStart_toEndOf="@+id/barrier3"
                     android:layout_marginStart="8dp"/>
+                    <!--android:text="@{Double.toString(counter.counterReading - safeUnbox(previousReading))}"-->
+
             <androidx.constraintlayout.widget.Barrier
                     android:layout_width="0dp"
                     android:layout_height="0dp" android:id="@+id/barrier3"

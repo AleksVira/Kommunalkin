@@ -84,12 +84,6 @@ lint/tmp/
 # lint/reports/
 
 ### Kotlin template
-# Compiled class file
-*.class
-
-# Log file
-*.log
-
 # BlueJ files
 *.ctxt
 
@@ -113,6 +107,5 @@ hs_err_pid*
 
 # IntelliJ project files
 .idea
-*.iml
 out
 gen

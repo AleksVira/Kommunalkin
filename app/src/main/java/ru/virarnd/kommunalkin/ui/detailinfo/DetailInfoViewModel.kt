@@ -13,20 +13,17 @@ class DetailInfoViewModel(private val prevFootprintId: Long, private val nowFoot
 
     private val repository = UserRepository
 
-//    private val _countersList: MutableLiveData<MutableList<Pair<Counter, Double>>> by lazy { MutableLiveData<MutableList<Pair<Counter, Double>>>() }
-    private val _countersList: MutableLiveData<MutableList<Pair<Counter, Double>>> = MutableLiveData<MutableList<Pair<Counter, Double>>>()
+    private val _countersList: MutableLiveData<MutableList<Pair<Counter, Double>>> by lazy { MutableLiveData<MutableList<Pair<Counter, Double>>>()}
     val countersList: LiveData<MutableList<Pair<Counter, Double>>>
         get() = _countersList
 
-/*
-    private val _listUpdated: SingleLiveEvent<Boolean> by lazy {SingleLiveEvent<Boolean>()}
-    val listUpdated: SingleLiveEvent<Boolean>
+    private val _listUpdated: SingleLiveEvent<Int> by lazy {SingleLiveEvent<Int>()}
+    val listUpdated: SingleLiveEvent<Int>
         get() = _listUpdated
-*/
 
 
     init {
-//        _listUpdated.value = false
+        _listUpdated.value = -1
         viewModelScope.launch {
             val pairDataFromTwoMonths = mutableListOf<Pair<Counter, Double>>()
             val countersFromCurrentMonth = repository.selectCountersByFootprint(nowFootprintId)
@@ -56,13 +53,18 @@ class DetailInfoViewModel(private val prevFootprintId: Long, private val nowFoot
         val liveDataElementToChange = _countersList.value?.firstOrNull { pair -> pair.first.counterStateId == counter.counterStateId}
         val counterIndex = countersList.value?.indexOf(liveDataElementToChange) ?: -1
 //        val newReading = Integer.parseInt(s.toString())
+        val tmp2PairList = _countersList.value?.toMutableList()
+        val tmp22PairList = countersList.value?.toMutableList()
+        val tmp3PairList = _countersList.value?.toList()
+        val tmp32PairList = countersList.value?.toList()
+        val tmp4List = ArrayList<Pair<Counter, Double>>(countersList.value)
         val newReading = s.toString().toDouble()
         Timber.d { "Vira_DetailInfoViewModel $s, counter: ${counter.counterName}, index: $counterIndex, parameter = $newReading" }
         if (counterIndex > -1) {
             val tmpPairList = countersList.value
             tmpPairList?.get(counterIndex)?.first?.counterReading = newReading
-            _countersList.value = tmpPairList
-//            _listUpdated.value = true
+//            _countersList.postValue(tmpPairList)
+            _listUpdated.value = counterIndex
             Timber.d{"Vira_DetailInfoViewModel Try to update List"}
 
 //            val newCounter = liveDataElementToChange?.first

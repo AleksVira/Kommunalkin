@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.ajalt.timberkt.Timber
 import ru.virarnd.kommunalkin.R
@@ -47,18 +48,17 @@ class DetailInfoFragment : Fragment() {
             detailRecyclerView.adapter = adapter
         }
 
-        viewModel.countersList.observe(this, Observer { countersList ->
-//            adapter.submitList(null)
-            adapter.submitList(countersList.toMutableList())
-            Timber.d { "Vira_DetailInfoFragment Name of the first: ${countersList[0].first.counterName}" }
+        viewModel.countersList.observe(this, Observer { list ->
+            val detailDiffUtilCallback = DetailInfoDiffUtilCallback(adapter.counterAndPrevReadingList, list.toList())
+            val detailDiffResult = DiffUtil.calculateDiff(detailDiffUtilCallback)
+            adapter.counterAndPrevReadingList = ArrayList(list)
+            detailDiffResult.dispatchUpdatesTo(adapter)
+            Timber.d { "Vira_DetailInfoFragment Name of the first: ${list[0].first.counterName}" }
         })
 
-/*
         viewModel.listUpdated.observe(this, Observer {
-            adapter.submitList(viewModel.countersList.value)
-//            adapter.notifyDataSetChanged()
+            adapter.notifyItemChanged(it)
         })
-*/
 
         return binding.root
     }
