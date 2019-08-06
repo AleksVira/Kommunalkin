@@ -1,5 +1,6 @@
 package ru.virarnd.kommunalkin.ui.detailinfo
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,32 +23,27 @@ class DetailInfoAdapter(val viewModel: DetailInfoViewModel, val status: EstateOb
     }
 
     override fun onBindViewHolder(holder: DetailViewHolder, position: Int) {
-        holder.setupItem(getItem(position))
+        holder.setupItem(getItem(position), position)
     }
 
     inner class DetailViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val binding: ItemDetailInfoBinding = ItemDetailInfoBinding.bind(itemView)
 
-        fun setupItem(dataSet: Pair<Counter, Double>) {
+        fun setupItem(dataSet: Pair<Counter, Double>, position: Int) {
             binding.detailInfoViewModel = viewModel
             binding.counter = dataSet.first
             binding.previousReading = dataSet.second
+            binding.position = position
+            binding.tvConsumptionLabel.setTextColor(if ((dataSet.first.counterReading - dataSet.second) < 0) Color.RED else Color.BLACK)
         }
     }
 
     class DetailInfoDiffUtilCallback : DiffUtil.ItemCallback<Pair<Counter, Double>>() {
         override fun areItemsTheSame(oldItem: Pair<Counter, Double>, newItem: Pair<Counter, Double>): Boolean {
-            Timber.d{"Vira_DetailInfoAdapter Simple try to compare: ${oldItem.first.counterStateId} and ${newItem.first.counterStateId},\n" +
-                    "result: ${oldItem.first.counterStateId == newItem.first.counterStateId && oldItem.second == newItem.second}"}
             return oldItem.first.counterStateId == newItem.first.counterStateId && oldItem.second == newItem.second
         }
 
         override fun areContentsTheSame(oldItem: Pair<Counter, Double>, newItem: Pair<Counter, Double>): Boolean {
-            Timber.d{"Vira_DetailInfoAdapter Complex try to compare: ${oldItem.first.counterStateId} and ${newItem.first.counterStateId},\n" +
-                    "result: ${oldItem.first.counterReading == newItem.first.counterReading
-                            && oldItem.first.estateObjectFootprintId == newItem.first.estateObjectFootprintId
-                            && oldItem.first.counterName == newItem.first.counterName
-                            && oldItem.first.counterType == newItem.first.counterType}"}
             return oldItem.first.counterReading == newItem.first.counterReading
                     && oldItem.first.estateObjectFootprintId == newItem.first.estateObjectFootprintId
                     && oldItem.first.counterName == newItem.first.counterName

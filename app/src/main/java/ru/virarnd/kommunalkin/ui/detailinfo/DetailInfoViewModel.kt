@@ -2,31 +2,35 @@ package ru.virarnd.kommunalkin.ui.detailinfo
 
 import androidx.lifecycle.*
 import com.github.ajalt.timberkt.Timber
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.virarnd.kommunalkin.common.SingleLiveEvent
 import ru.virarnd.kommunalkin.database.UserRepository
 import ru.virarnd.kommunalkin.models.Counter
 import ru.virarnd.kommunalkin.models.EstateObjectStatus
 
-class DetailInfoViewModel(private val prevFootprintId: Long, private val nowFootprintId: Long, val status: EstateObjectStatus) :
+class DetailInfoViewModel(
+    private val prevFootprintId: Long,
+    private val nowFootprintId: Long,
+    val status: EstateObjectStatus
+) :
     ViewModel() {
 
     private val repository = UserRepository
+    private var searchFor = ""
 
-//    private val _countersList: MutableLiveData<MutableList<Pair<Counter, Double>>> by lazy { MutableLiveData<MutableList<Pair<Counter, Double>>>() }
-    private val _countersList: MutableLiveData<MutableList<Pair<Counter, Double>>> = MutableLiveData<MutableList<Pair<Counter, Double>>>()
+    private val _countersList: MutableLiveData<MutableList<Pair<Counter, Double>>> =
+        MutableLiveData<MutableList<Pair<Counter, Double>>>()
     val countersList: LiveData<MutableList<Pair<Counter, Double>>>
         get() = _countersList
 
-/*
-    private val _listUpdated: SingleLiveEvent<Boolean> by lazy {SingleLiveEvent<Boolean>()}
-    val listUpdated: SingleLiveEvent<Boolean>
-        get() = _listUpdated
-*/
+    private val _listItemUpdated: SingleLiveEvent<Int> by lazy { SingleLiveEvent<Int>() }
+    val listItemUpdated: SingleLiveEvent<Int>
+        get() = _listItemUpdated
 
 
     init {
-//        _listUpdated.value = false
+//        _listItemUpdated.value = -1
         viewModelScope.launch {
             val pairDataFromTwoMonths = mutableListOf<Pair<Counter, Double>>()
             val countersFromCurrentMonth = repository.selectCountersByFootprint(nowFootprintId)
@@ -52,41 +56,31 @@ class DetailInfoViewModel(private val prevFootprintId: Long, private val nowFoot
         }
     }
 
-    fun afterReadingTextChanged(s: CharSequence, counter: Counter) {
-        val liveDataElementToChange = _countersList.value?.firstOrNull { pair -> pair.first.counterStateId == counter.counterStateId}
-        val counterIndex = countersList.value?.indexOf(liveDataElementToChange) ?: -1
-//        val newReading = Integer.parseInt(s.toString())
-        val newReading = s.toString().toDouble()
-        Timber.d { "Vira_DetailInfoViewModel $s, counter: ${counter.counterName}, index: $counterIndex, parameter = $newReading" }
-        if (counterIndex > -1) {
-            val tmpPairList = countersList.value
-            tmpPairList?.get(counterIndex)?.first?.counterReading = newReading
-            _countersList.value = tmpPairList
-//            _listUpdated.value = true
-            Timber.d{"Vira_DetailInfoViewModel Try to update List"}
-
-//            val newCounter = liveDataElementToChange?.first
-//            newCounter?.counterReading = newReading
-//            val newPair: Pair<Counter, Double> = Pair (newCounter!!, newReading)
-//            tmpPairList?.set(counterIndex, newPair)
-//            _countersList.value = tmpPairList
-
-//            tmpPairList?.set(counterIndex, liveDataElementToChange?.copy().first.counterReading)
-//            tmpPairList[counterIndex].first.counterReading = newReading
-
-
-//            var readingFromPrevious = liveDataElementToChange?.second
-//            newCounter.counterReading = newReading
-
-//            var newPair = liveDataElementToChange.
-//            newPair?.first.counterReading = newReading
-//            _countersList.value.set(counterIndex, )
-//            _countersList.value?.get(counterIndex)?.first?.counterReading = newReading
+    fun afterReadingTextChanged(s: CharSequence, counter: Counter, position: Int) {
+        var inputString = s.toString()
+        if (inputString.isEmpty()) {
+            inputString = "0"
+        }
+        val newText = inputString.trim()
+        if (newText == searchFor) return
+        searchFor = newText
+        // Делаю аналог debounce
+        viewModelScope.launch {
+            delay(500)  //debounce timeOut
+            Timber.d { "newText = $newText, searchFor = $searchFor" }
+            if (newText != searchFor) {
+                return@launch
+            }
+            val newReading = inputString.toDouble()
+            // Обновляю общий список
+            _countersList.value?.get(position)?.first?.counterReading = newReading
+            // и вызываю обновление одного элемента
+            _listItemUpdated.value = position
         }
     }
 
     fun saveCurrent() {
-        Timber.d{"Vira_DetailInfoViewModel ID for save: ${nowFootprintId}"}
+        Timber.d { "Vira_DetailInfoViewModel ID for save: ${nowFootprintId}" }
     }
 
 

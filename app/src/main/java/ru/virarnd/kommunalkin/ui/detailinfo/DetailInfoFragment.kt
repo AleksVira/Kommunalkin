@@ -4,14 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
+import androidx.cardview.widget.CardView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.ajalt.timberkt.Timber
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.virarnd.kommunalkin.R
 import ru.virarnd.kommunalkin.databinding.FragmentDetailInfoBinding
 import ru.virarnd.kommunalkin.models.EstateObjectStatus
@@ -34,10 +39,10 @@ class DetailInfoFragment : Fragment() {
         )
         viewModel = ViewModelProviders.of(this, detailInfoViewModelFactory).get(DetailInfoViewModel::class.java)
 
-        Timber.d { "Vira_DetailInfoFragment Получил: 1 ID = ${arguments.nowFootprintId}, 2 ID = ${arguments.prevFootprintId}, статус = ${arguments.status.name}" }
         status = arguments.status
         val detailInfoLayoutManager = LinearLayoutManager(context)
         adapter = DetailInfoAdapter(viewModel, status)
+//        adapter.hasStableIds()
 
 
         with(binding) {
@@ -45,20 +50,26 @@ class DetailInfoFragment : Fragment() {
             detailInfoViewModel = viewModel
             detailRecyclerView.layoutManager = detailInfoLayoutManager
             detailRecyclerView.adapter = adapter
+            detailRecyclerView.hasFixedSize()
         }
 
         viewModel.countersList.observe(this, Observer { countersList ->
-//            adapter.submitList(null)
-            adapter.submitList(countersList.toMutableList())
-            Timber.d { "Vira_DetailInfoFragment Name of the first: ${countersList[0].first.counterName}" }
+            adapter.submitList(countersList)
         })
 
-/*
-        viewModel.listUpdated.observe(this, Observer {
-            adapter.submitList(viewModel.countersList.value)
-//            adapter.notifyDataSetChanged()
+        viewModel.listItemUpdated.observe(this, Observer { position ->
+            var cardView = binding.detailRecyclerView.layoutManager?.findViewByPosition(position) as CardView
+            var editText = cardView.findViewById<TextInputEditText>(R.id.et_reading_now)
+            val cursorPosition = editText.selectionStart
+
+            viewModel.viewModelScope.launch {
+                adapter.notifyItemChanged(position)
+                delay(50)
+                cardView = binding.detailRecyclerView.layoutManager?.findViewByPosition(position) as CardView
+                editText = cardView.findViewById<TextInputEditText>(R.id.et_reading_now)
+                editText.setSelection(cursorPosition)
+            }
         })
-*/
 
         return binding.root
     }
