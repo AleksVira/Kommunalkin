@@ -4,17 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.cardview.widget.CardView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.ajalt.timberkt.Timber
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.async
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.virarnd.kommunalkin.R
@@ -26,6 +29,23 @@ class DetailInfoFragment : Fragment() {
     private lateinit var binding: FragmentDetailInfoBinding
     private lateinit var status: EstateObjectStatus
     private lateinit var adapter: DetailInfoAdapter
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Timber.d { "Vira_DetailInfoFragment handleOnBackPressed()" }
+                //TODO Реализовать обработку нажатия назад: сохранение валидных и пр.
+                when (status) {
+                    EstateObjectStatus.COMPLETED -> findNavController().navigateUp()
+                    else -> findNavController().navigateUp()
+
+                }
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+    }
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -42,7 +62,6 @@ class DetailInfoFragment : Fragment() {
         status = arguments.status
         val detailInfoLayoutManager = LinearLayoutManager(context)
         adapter = DetailInfoAdapter(viewModel, status)
-//        adapter.hasStableIds()
 
 
         with(binding) {
@@ -71,11 +90,32 @@ class DetailInfoFragment : Fragment() {
             }
         })
 
+        viewModel.validationResponse.observe(this, Observer {
+            Timber.d{"Vira_DetailInfoFragment ErrorStatus: ${it.status}"}
+            when (it.status) {
+                CheckResponse.Status.ERROR -> {
+                    Snackbar.make(container!!, it.message, Snackbar.LENGTH_LONG).show()
+                }
+                else -> {
+                    Snackbar.make(binding.detailLayout, it.message, Snackbar.LENGTH_LONG).show()
+                }
+            }
+        })
+
+        viewModel.navigateToMainInfoFragment.observe(this, Observer {
+            Timber.d{"Vira_DetailInfoFragment navigateToMainInfoFragment"}
+//            findNavController().navigateUp()
+            findNavController().navigate(DetailInfoFragmentDirections.actionDetailInfoFragmentToMainInfoFragment(it))
+        })
+
+
         return binding.root
     }
 
+
+
     override fun onPause() {
         super.onPause()
-        viewModel.saveCurrent()
+        viewModel.saveAllValidCounters()
     }
 }

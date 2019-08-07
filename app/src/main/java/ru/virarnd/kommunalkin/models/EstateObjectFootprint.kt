@@ -40,7 +40,7 @@ data class EstateObjectFootprint(
     @ColumnInfo(name = "object_year_and_month")
     val objectDate: Int = 0,
 
-    @ColumnInfo(name = "status")
-    val status: EstateObjectStatus = EstateObjectStatus.EMPTY
+    @ColumnInfo(name = "Status")
+    var status: EstateObjectStatus = EstateObjectStatus.EMPTY
 
 )

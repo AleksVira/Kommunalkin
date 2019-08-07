@@ -138,6 +138,18 @@ object UserRepository {
         return counterDao.selectCountersByFootprint(prevFootprintId)
     }
 
+    suspend fun saveCounterById(counterToSave: Counter) {
+        counterDao.update(counterToSave)
+    }
+
+    suspend fun getEstateObjectFootprintByFootprintId(footprintId: Long) : EstateObjectFootprint? {
+        return estateObjectFootprintDao.getByEstateObjectId(footprintId)
+    }
+
+    suspend fun updateEstateObjectFootprint(estateObjectFootprint: EstateObjectFootprint) {
+        estateObjectFootprintDao.update(estateObjectFootprint)
+    }
+
 //    suspend fun getLiveEstateObjectDataByOwnerId(userId: Long): LiveData<List<EstateObjectFootprint>> {
 //        return estateObjectFootprintDao.getLiveEstateObjectDataByOwnerId(userId)
 //    }

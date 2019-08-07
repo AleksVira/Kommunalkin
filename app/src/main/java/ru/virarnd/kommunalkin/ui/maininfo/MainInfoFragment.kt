@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.ajalt.timberkt.Timber
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_detail_info.*
+import kotlinx.android.synthetic.main.fragment_main_info.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,15 +33,11 @@ class MainInfoFragment : Fragment() {
     private lateinit var adapter: MainInfoAdapter
 
     private var pressedOnce = false
-    private var toast: Toast? = null
     private lateinit var snackbar: Snackbar
-    private val rootLayout = activity?.findViewById<LinearLayout>(android.R.id.content)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        snackbar = Snackbar.make(activity!!.findViewById(android.R.id.content), "Please click BACK again to logout", Snackbar.LENGTH_LONG)
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (pressedOnce) {
@@ -62,6 +59,7 @@ class MainInfoFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main_info, container, false)
+        snackbar = Snackbar.make(container!!, "Please click BACK again to logout", Snackbar.LENGTH_LONG)
 
         val arguments: MainInfoFragmentArgs by navArgs()
         val mainInfoLayoutManager = LinearLayoutManager(context)

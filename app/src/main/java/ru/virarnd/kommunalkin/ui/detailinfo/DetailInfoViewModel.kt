@@ -2,11 +2,12 @@ package ru.virarnd.kommunalkin.ui.detailinfo
 
 import androidx.lifecycle.*
 import com.github.ajalt.timberkt.Timber
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 import ru.virarnd.kommunalkin.common.SingleLiveEvent
 import ru.virarnd.kommunalkin.database.UserRepository
 import ru.virarnd.kommunalkin.models.Counter
+import ru.virarnd.kommunalkin.models.EstateObjectFootprint
 import ru.virarnd.kommunalkin.models.EstateObjectStatus
 
 class DetailInfoViewModel(
@@ -16,6 +17,7 @@ class DetailInfoViewModel(
 ) :
     ViewModel() {
 
+    private var countersFromCurrentMonth: List<Counter>? = null
     private val repository = UserRepository
     private var searchFor = ""
 
@@ -28,12 +30,19 @@ class DetailInfoViewModel(
     val listItemUpdated: SingleLiveEvent<Int>
         get() = _listItemUpdated
 
+    private val _validationResponse: SingleLiveEvent<CheckResponse> by lazy { SingleLiveEvent<CheckResponse>() }
+    val validationResponse: SingleLiveEvent<CheckResponse>
+        get() = _validationResponse
+
+    private val _navigateToMainInfoFragment: SingleLiveEvent<Long> by lazy { SingleLiveEvent<Long>() }
+    val navigateToMainInfoFragment: LiveData<Long>
+        get() = _navigateToMainInfoFragment
+
 
     init {
-//        _listItemUpdated.value = -1
         viewModelScope.launch {
             val pairDataFromTwoMonths = mutableListOf<Pair<Counter, Double>>()
-            val countersFromCurrentMonth = repository.selectCountersByFootprint(nowFootprintId)
+            countersFromCurrentMonth = repository.selectCountersByFootprint(nowFootprintId)
             val countersFromPreviousMonth = repository.selectCountersByFootprint(prevFootprintId)
 
             countersFromPreviousMonth?.forEach { fromPrevMonth ->
@@ -76,11 +85,67 @@ class DetailInfoViewModel(
             _countersList.value?.get(position)?.first?.counterReading = newReading
             // и вызываю обновление одного элемента
             _listItemUpdated.value = position
+            searchFor = ""
         }
     }
 
-    fun saveCurrent() {
-        Timber.d { "Vira_DetailInfoViewModel ID for save: ${nowFootprintId}" }
+
+    fun onSendButtonClicked() {
+        val allSavedCountersAreValid: Boolean = saveAllValidCounters()
+        if (!allSavedCountersAreValid) {
+            // Если хоть один расход отрицательный, данные отправить нельзя
+            _validationResponse.value =
+                CheckResponse(message = "Расход не может быть отрицательным!", status = CheckResponse.Status.ERROR)
+            return
+        }
+
+        val listOfReadings = _countersList.value?.map { it -> it.first.counterReading.toString() }
+        val dialogAnswer = showConfirmationInfoDialog(listOfReadings)
+        if (dialogAnswer) {
+            var userId = 0L;
+            userId = changeStatusToCompleted(nowFootprintId)
+            Timber.d { "Vira_DetailInfoViewModel UserId = $userId" }
+            _validationResponse.value =
+                CheckResponse(message = "Данные отправлены!", status = CheckResponse.Status.OK)
+
+            viewModelScope.launch { delay(600) }
+//            _navigateToMainInfoFragment.value = userId
+            _navigateToMainInfoFragment.value = userId
+
+        }
+    }
+
+
+    private fun changeStatusToCompleted(nowFootprintId: Long): Long {
+        var estateObjectFootprint: EstateObjectFootprint? = null
+        runBlocking {
+            estateObjectFootprint = repository.getEstateObjectFootprintByFootprintId(nowFootprintId)
+            estateObjectFootprint?.status = EstateObjectStatus.COMPLETED
+            estateObjectFootprint?.let { repository.updateEstateObjectFootprint(it) }
+        }
+        Timber.d { "Vira_DetailInfoViewModel changeStatusToCompleted, footprintID = $nowFootprintId, check it for counters!!!" }
+        return estateObjectFootprint?.ownerId ?: -1L
+    }
+
+    private fun showConfirmationInfoDialog(listOfReadings: List<String>?): Boolean {
+        return true
+    }
+
+    fun saveAllValidCounters(): Boolean {
+        //Сохраняю все валидные счётчики в БД.
+        var allValid = true
+        _countersList.value?.forEach { pair ->
+            Timber.d { "Vira_DetailInfoViewModel calculate diff: ${pair.first.counterReading - pair.second}" }
+            if ((pair.first.counterReading - pair.second) > 0) {
+                viewModelScope.launch {
+                    Timber.d { "Vira_DetailInfoViewModel Counter ID for save: ${pair.first.counterStateId}" }
+                    async(IO) { repository.saveCounterById(pair.first) }.await()
+                }
+            } else {
+                allValid = false
+            }
+        }
+        return allValid
     }
 
 

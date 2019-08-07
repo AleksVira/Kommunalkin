@@ -25,9 +25,9 @@ class MainInfoViewModel(val userId: Long) : ViewModel() {
     val navigateToDetailViewWithTwoFootprints: LiveData<MainToDetailTransferData>
         get() = _navigateToDetailViewWithTwoFootprints
 
-    private val _navigateToLogin: SingleLiveEvent<Boolean> by lazy {SingleLiveEvent<Boolean>()}
-    val navigateToLogin: LiveData<Boolean>
-        get() = _navigateToLogin
+//    private val _navigateToLogin: SingleLiveEvent<Boolean> by lazy {SingleLiveEvent<Boolean>()}
+//    val navigateToLogin: LiveData<Boolean>
+//        get() = _navigateToLogin
 
 
     init {
@@ -48,7 +48,7 @@ class MainInfoViewModel(val userId: Long) : ViewModel() {
                 pairDataFromTwoMonth.add(Pair(savedDataFromPreviousDate, dataFromCurrentDateWithTheSameObjectId))
             }
             _estateObjectsListFootprint.postValue(pairDataFromTwoMonth)
-            Timber.d{"Got it!!! ${dataFromPreviousMonth}"}
+            Timber.d{"Got it!!! userId = $userId, ${dataFromPreviousMonth}"}
         }
     }
 

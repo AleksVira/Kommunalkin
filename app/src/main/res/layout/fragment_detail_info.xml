@@ -38,6 +38,7 @@
                 android:id="@+id/send_button"
                 android:layout_weight="0"
                 android:text="@string/send_data"
+                android:onClick="@{() -> detailInfoViewModel.onSendButtonClicked()}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="@{detailInfoViewModel.status == EstateObjectStatus.COMPLETED ? View.GONE : View.VISIBLE}"
